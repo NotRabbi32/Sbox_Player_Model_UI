@@ -1,0 +1,106 @@
+{
+  "RootObject": {
+    "__guid": "b3d6cc9a-87c2-44e1-a515-fc0240bd3c06",
+    "__version": 2,
+    "Flags": 0,
+    "Name": "player_model_ui",
+    "Position": "0,0,0",
+    "Rotation": "0,0,0,1",
+    "Scale": "1,1,1",
+    "Tags": "",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "NetworkFlags": 0,
+    "NetworkOrphaned": 0,
+    "NetworkTransmit": true,
+    "OwnerTransfer": 1,
+    "Components": [
+      {
+        "__type": "Sandbox.ScreenPanel",
+        "__guid": "4fd2f2eb-603d-43ac-bcfc-6b64e9a99833",
+        "__enabled": true,
+        "Flags": 0,
+        "AutoScreenScale": true,
+        "OnComponentDestroy": null,
+        "OnComponentDisabled": null,
+        "OnComponentEnabled": null,
+        "OnComponentFixedUpdate": null,
+        "OnComponentStart": null,
+        "OnComponentUpdate": null,
+        "Opacity": 1,
+        "Scale": 1,
+        "ScaleStrategy": "ConsistentHeight",
+        "TargetCamera": null,
+        "Timing": "AfterPostProcess",
+        "ZIndex": 100
+      },
+      {
+        "__type": "PlayerModelManager",
+        "__guid": "7b592c4a-3761-4746-9acd-6be2bfb94a5f",
+        "__enabled": true,
+        "Flags": 0,
+        "HideBodyClothing": {
+          "Id": "bc6de8c1-49dc-4819-8bae-249b284c560b",
+          "Path": "clothing/hidebody.clothing"
+        },
+        "OnComponentDestroy": null,
+        "OnComponentDisabled": null,
+        "OnComponentEnabled": null,
+        "OnComponentFixedUpdate": null,
+        "OnComponentStart": null,
+        "OnComponentUpdate": null
+      },
+      {
+        "__type": "Sandbox.PlayerModelUI",
+        "__guid": "12b3192c-6a9b-4cb7-8cf5-b6c35f768ce7",
+        "__enabled": true,
+        "Flags": 0,
+        "CloudPlayerModels": [],
+        "CurrentTabId": 1,
+        "IsHidden": true,
+        "ModelManager": {
+          "_type": "component",
+          "component_id": "7b592c4a-3761-4746-9acd-6be2bfb94a5f",
+          "go": "b3d6cc9a-87c2-44e1-a515-fc0240bd3c06",
+          "component_type": "PlayerModelManager"
+        },
+        "OnComponentDestroy": null,
+        "OnComponentDisabled": null,
+        "OnComponentEnabled": null,
+        "OnComponentFixedUpdate": null,
+        "OnComponentStart": null,
+        "OnComponentUpdate": null
+      }
+    ],
+    "Children": [],
+    "__properties": {
+      "NetworkInterpolation": true,
+      "PhysicsMode": "Physics3D",
+      "TimeScale": 1,
+      "WantsSystemScene": true,
+      "Metadata": {},
+      "NavMesh": {
+        "Enabled": false,
+        "IncludeStaticBodies": true,
+        "IncludeKeyframedBodies": true,
+        "EditorAutoUpdate": false,
+        "AgentHeight": 64,
+        "AgentRadius": 16,
+        "AgentStepSize": 18,
+        "AgentMaxSlope": 40,
+        "ExcludedBodies": "",
+        "IncludedBodies": "",
+        "DeferGeneration": false,
+        "CustomBounds": false
+      }
+    },
+    "__variables": []
+  },
+  "ResourceVersion": 2,
+  "ShowInMenu": false,
+  "MenuPath": null,
+  "MenuIcon": null,
+  "DontBreakAsTemplate": false,
+  "__references": [],
+  "__version": 2
+}

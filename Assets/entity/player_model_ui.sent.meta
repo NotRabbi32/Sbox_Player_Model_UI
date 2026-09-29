@@ -1,0 +1,23 @@
+{
+  "guid": "72780000-0211-0000-1300-000070006c00",
+  "publish": {
+    "Enabled": true,
+    "ProjectConfig": {
+      "Title": "Custom Player UI",
+      "Type": "sent",
+      "Org": "rabbi32",
+      "Ident": "player_model_ui",
+      "Schema": 0,
+      "IncludeSourceFiles": false,
+      "Resources": null,
+      "PackageReferences": null,
+      "EditorReferences": null,
+      "Mounts": null,
+      "IsStandaloneOnly": false,
+      "Metadata": {
+        "SingleAssetSource": "entity/player_model_ui.sent",
+        "ParentPackage": "facepunch.sandbox"
+      }
+    }
+  }
+}

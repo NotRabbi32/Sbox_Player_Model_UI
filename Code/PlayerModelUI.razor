@@ -1,0 +1,190 @@
+@using System;
+@using System.Threading.Tasks;
+@using System.Collections.Generic;
+@using System.Linq;
+@using Sandbox;
+@using Sandbox.UI;
+
+@inherits PanelComponent;
+@implements Component.INetworkSpawn;
+@namespace Sandbox
+
+<root class="@(IsHidden ? "hide" : "")">
+	<div class="ui-container">
+		<div class="sidebar-container">
+			<header class="sidebar-header">Player Switcher</header>
+			<div class="sidebar-btn-list">
+				@foreach (var button in ButtonList)
+				{
+					<button class="sidebar-btn@(CurrentTabId == button.Id ? " active" : "")" onclick="@(() => SwitchTab(button.Id))">
+						@button.Name
+					</button>
+				}
+			</div>
+		</div>
+
+		@switch (CurrentTabId)
+		{
+			case 1:
+				<div class="content-container">
+					@if (CloudPlayerModels != null && CloudPlayerModels.Length > 0)
+					{
+						<VirtualGrid style="width: 100%; height: 100%; gap: 20px;" Items=@CloudPlayerModels ItemSize=@(150)>
+							<Item Context="item">
+								@if (item is Package entry)
+								{
+									<button class="package-button" onclick="@( () => { OnButtonClick( entry ); } )">
+										<img class="package-icon" src="@entry.Thumb" />
+										<span class="package-text">@entry.Title</span>
+									</button>
+								}
+							</Item>
+						</VirtualGrid>
+					}
+					else
+					{
+						<div class="wip-container">
+							<p>Loading player models...</p>
+						</div>
+					}
+				</div>
+				break;
+
+			case 2:
+				<div class="content-container">
+					<div class="wip-container">
+						<header class="wip-header">Work In Progress</header>
+					</div>
+				</div>
+				break;
+
+			case 3:
+				<div class="content-container">
+					<div class="wip-container">
+						<header class="wip-header">Work In Progress</header>
+						<p>Updates can be viewed at</p>
+						<p>https://sbox.game</p>
+					</div>
+				</div>
+				break;
+
+			case 4:
+				<div class="content-container">
+					<div class="wip-container">
+						<header class="wip-header">How to Use</header>
+						<p>Press P - to open it. It refreshes when opened.</p>
+						<header class="wip-header">Adding Player Models</header>
+						<p>On sbox.game add tag "playermodel" to package.</p>
+						<p>On refresh will show up in List.</p>
+					</div>
+				</div>
+				break;
+
+		}
+	</div>
+</root>
+
+@code
+{
+	[Header("Vars")]
+	[Property] public bool IsHidden { get; set; } = true;
+	[Property] public PlayerModelManager ModelManager { get; set; }
+	[Property] public int CurrentTabId { get; set; } = 1;
+
+	public struct TabInfo
+	{
+		public int Id { get; set; }
+		public string Name { get; set; }
+	}
+
+	public List<TabInfo> ButtonList = new()
+	{
+		new TabInfo { Id = 1, Name = "Players Models"},
+		new TabInfo { Id = 2, Name = "Pills (WIP)"},
+		new TabInfo { Id = 3, Name = "Updates (WIP)"},
+		new TabInfo { Id = 4, Name = "How to Use"},
+	};
+
+	[Header("UGC Packages")]
+	[Property] public Package[] CloudPlayerModels { get; set; } = Array.Empty<Package>();
+	[Property] public Package PlayerModelUIPackage { get; set; }
+
+	public void OnNetworkSpawn(Connection owner)
+	{
+		// PanelComponents use GameObject.IsProxy contextual redirection
+		if (GameObject.IsProxy)
+		{
+			this.Destroy();
+			Log.Info("Not Owner of Player Switch. Destroying UI Object.");
+			return;
+		}
+
+		Log.Info("Player Switcher: Local owner UI started.");
+	}
+
+	protected override void OnUpdate()
+	{
+		if (Input.Keyboard.Pressed("P"))
+		{
+			IsHidden = !IsHidden;
+			Log.Info($"Content Menu is Opened: {IsHidden}");
+
+			if (!IsHidden)
+			{
+				_ = FetchCloudContentAsync();
+			}
+		}
+	}
+
+	void SwitchTab(int id)
+	{
+		Log.Info($"Switching to tab with ID:{id}");
+		CurrentTabId = id;
+	}
+
+	void OnButtonClick(Package entry)
+	{
+		if (ModelManager == null)
+		{
+			Log.Error(
+				"PlayerModelManager property is not assigned!"
+			);
+
+			return;
+		}
+
+		if (entry == null)
+			return;
+
+		Log.Info(
+			$"Button Clicked! Requesting {entry.FullIdent}"
+		);
+
+		ModelManager.SelectModel(entry.FullIdent);
+
+		IsHidden = true;
+	}
+
+	async Task FetchCloudContentAsync()
+	{
+		var packages = await QueryCloudUsingTags(" +playermodel ");
+		CloudPlayerModels = packages ?? Array.Empty<Package>();
+	}
+
+	async Task<Package[]> QueryCloudUsingTags(string tags)
+	{
+		var searchResult = await Package.FindAsync(tags);
+
+		if (searchResult.Packages == null) return Array.Empty<Package>();
+
+		var tempList = new List<Package>();
+		foreach (var package in searchResult.Packages)
+		{
+			Log.Info($"Found Cloud Item: {package.Title} by {package.Org.Title}");
+			tempList.Add(package);
+		}
+		return tempList.ToArray();
+	}
+
+	protected override int BuildHash() => System.HashCode.Combine(PlayerModelUIPackage, CurrentTabId, CloudPlayerModels, IsHidden);
+}

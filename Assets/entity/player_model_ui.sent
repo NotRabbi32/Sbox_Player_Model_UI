@@ -1,0 +1,10 @@
+{
+  "Prefab": "entity/player_model_ui.prefab",
+  "Title": "Custom Player UI",
+  "Description": "A Player Selector for your favorite models. Press P to Open",
+  "Category": "UI",
+  "IncludeCode": true,
+  "Developer": false,
+  "__references": [],
+  "__version": 0
+}

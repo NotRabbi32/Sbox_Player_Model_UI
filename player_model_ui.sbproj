@@ -1,0 +1,17 @@
+{
+  "Title": "Player Model UI",
+  "Type": "addon",
+  "Org": "rabbi32",
+  "Ident": "player_model_ui",
+  "Schema": 1,
+  "IncludeSourceFiles": false,
+  "Resources": null,
+  "PackageReferences": [],
+  "EditorReferences": null,
+  "Mounts": null,
+  "IsStandaloneOnly": false,
+  "Metadata": {
+    "StartupScene": "scenes/testing_scene.scene",
+    "ParentPackage": "facepunch.sandbox"
+  }
+}
