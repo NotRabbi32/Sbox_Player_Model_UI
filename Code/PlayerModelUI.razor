@@ -88,7 +88,9 @@
 {
 	[Header("Vars")]
 	[Property] public bool IsHidden { get; set; } = true;
+
 	[Property] public PlayerModelManager ModelManager { get; set; }
+
 	[Property] public int CurrentTabId { get; set; } = 1;
 
 	public struct TabInfo
@@ -107,11 +109,11 @@
 
 	[Header("UGC Packages")]
 	[Property] public Package[] CloudPlayerModels { get; set; } = Array.Empty<Package>();
+
 	[Property] public Package PlayerModelUIPackage { get; set; }
 
 	public void OnNetworkSpawn(Connection owner)
 	{
-		// PanelComponents use GameObject.IsProxy contextual redirection
 		if (GameObject.IsProxy)
 		{
 			this.Destroy();
@@ -146,19 +148,13 @@
 	{
 		if (ModelManager == null)
 		{
-			Log.Error(
-				"PlayerModelManager property is not assigned!"
-			);
-
+			Log.Error( "PlayerModelManager property is not assigned!" );
 			return;
 		}
 
-		if (entry == null)
-			return;
+		if (entry == null) return;
 
-		Log.Info(
-			$"Button Clicked! Requesting {entry.FullIdent}"
-		);
+		Log.Info( $"Button Clicked! Requesting {entry.FullIdent}" );
 
 		ModelManager.SelectModel(entry.FullIdent);
 
@@ -178,11 +174,13 @@
 		if (searchResult.Packages == null) return Array.Empty<Package>();
 
 		var tempList = new List<Package>();
+
 		foreach (var package in searchResult.Packages)
 		{
 			Log.Info($"Found Cloud Item: {package.Title} by {package.Org.Title}");
 			tempList.Add(package);
 		}
+
 		return tempList.ToArray();
 	}
 

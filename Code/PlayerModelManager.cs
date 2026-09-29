@@ -7,11 +7,7 @@ public sealed class PlayerModelManager : Component, Global.IPlayerEvents
 { 
 	[Header( "Visual Templates" )]
 	[Property] public Clothing HideBodyClothing { get; set; } 
-	// The currently selected model for each player. 
-	// Key = Steam ID / Connection ID. 
-	// 
-	// This lives on the host and survives player GameObject destruction, 
-	// so the selection is still there when the player respawns.
+	
 	private readonly Dictionary<ulong, string> SelectedModels = new(); 
 	private string LastAppliedIdent = ""; 
 	private GameObject LastAppliedPlayer; 
@@ -19,12 +15,7 @@ public sealed class PlayerModelManager : Component, Global.IPlayerEvents
 	{ 
 		var ownable = GameObject.Components.Get<Ownable>(); 
 
-		Log.Info( $"PlayerModelManager started. " 
-			+ $"NetworkActive={GameObject.Network.Active}, " 
-			+ $"IsOwner={GameObject.Network.IsOwner}, " 
-			+ $"NetworkOwnerId={GameObject.Network.OwnerId}, " 
-			+ $"SpawnerOwner={(ownable?.Owner?.DisplayName ?? "NULL")}, " +
-			$"" + $"SpawnerOwnerId={(ownable?.Owner?.Id.ToString() ?? "NULL")}" ); 
+		Log.Info( $"PlayerModelManager started. NetworkOwnerId={GameObject.Network.OwnerId}, SpawnerOwner={(ownable?.Owner?.DisplayName ?? "NULL")}, SpawnerOwnerId={(ownable?.Owner?.Id.ToString() ?? "NULL")}" ); 
 	} 
 
 	/// <summary> 
@@ -42,6 +33,7 @@ public sealed class PlayerModelManager : Component, Global.IPlayerEvents
 		Log.Info( $"Requesting model change: {packageIdent}" ); 
 		RequestModelChange( packageIdent ); 
 	} 
+
 	/// <summary> 
 	/// Runs on the host. 
 	/// Determines which player made the request and remembers 
@@ -60,10 +52,9 @@ public sealed class PlayerModelManager : Component, Global.IPlayerEvents
 		} 
 		Log.Info( $"Model request received from {caller.DisplayName} " + $"({caller.Id})" ); 
 		
-		// --------------------------------------------------------- 
+		
 		// Find the PlayerController belonging to the caller. 
-		// ---------------------------------------------------------
-		var playerController = Scene .GetAllComponents<PlayerController>().FirstOrDefault( p => p.GameObject.IsValid() && p.GameObject.Network.Active && p.GameObject.Network.Owner == caller ); 
+		var playerController = Scene.GetAllComponents<PlayerController>().FirstOrDefault( p => p.GameObject.IsValid() && p.GameObject.Network.Active && p.GameObject.Network.Owner == caller ); 
 		
 		if ( playerController == null ) 
 		{ 
@@ -72,18 +63,11 @@ public sealed class PlayerModelManager : Component, Global.IPlayerEvents
 		} 
 		
 		var playerObject = playerController.GameObject; if ( !playerObject.IsValid() ) return; 
-		// --------------------------------------------------------- 
-		// Remember the player's selection. 
-		// We use the connection ID rather than the Player GameObject 
-		// because the Player GameObject gets destroyed on death. 
-		// ---------------------------------------------------------
 
 		SelectedModels[caller.OwnerSteamId] = packageIdent; 
 		Log.Info( $"Stored model selection for {caller.DisplayName}: " + $"{packageIdent}" ); 
 		
-		// --------------------------------------------------------- 
-		// Apply immediately to the current player. 
-		// ---------------------------------------------------------
+		
 		Log.Info( $"Changing {caller.DisplayName}'s model to {packageIdent}" ); 
 		BroadcastModelChange( playerObject, packageIdent ); 
 	} 
@@ -134,11 +118,12 @@ public sealed class PlayerModelManager : Component, Global.IPlayerEvents
 	/// </summary> 
 	[Rpc.Broadcast] 
 	private void BroadcastModelChange( GameObject targetPlayer, string packageIdent ) { 
-		if ( targetPlayer == null || !targetPlayer.IsValid() ) 
-			return; 
-		if ( string.IsNullOrWhiteSpace( packageIdent ) ) 
-			return; 
+		if ( targetPlayer == null || !targetPlayer.IsValid() ) return; 
+
+		if ( string.IsNullOrWhiteSpace( packageIdent ) ) return; 
+
 		Log.Info( $"Applying model {packageIdent} to {targetPlayer.Name}" ); 
+
 		_ = TryAssignModel( targetPlayer, packageIdent ); 
 	} 
 	
@@ -170,22 +155,29 @@ public sealed class PlayerModelManager : Component, Global.IPlayerEvents
 	
 	public async Task<Model> DownloadAsset( string packageIdent ) { 
 		try { 
-			var package = await Package.Fetch( packageIdent, false ); 
+			var package = await Package.Fetch( packageIdent, false );
+			
 			if ( package == null || package.Revision == null ) 
 				return null; 
+
 			if ( !package.IsMounted() ) 
 				await package.MountAsync(); 
+
 			var assetPath = package.PrimaryAsset; 
+
 			if ( string.IsNullOrWhiteSpace( assetPath ) ) 
 				return null; 
+
 			if ( !assetPath.EndsWith( ".vmdl", System.StringComparison.OrdinalIgnoreCase ) ) { 
 				Log.Error( $"Primary asset isn't a vmdl: {assetPath}" ); 
 				return null; 
 			} 
+
 			return await Model.LoadAsync( assetPath ); 
 		} 
 		catch ( System.Exception ex ) 
-		{ Log.Error( $"Failed to load {packageIdent}: {ex.Message}" ); 
+		{ 
+			Log.Error( $"Failed to load {packageIdent}: {ex.Message}" ); 
 			return null; 
 		} 
 	} 
@@ -193,8 +185,11 @@ public sealed class PlayerModelManager : Component, Global.IPlayerEvents
 	public async Task ForceStrip( Dresser dresser ) 
 	{ 
 		if ( dresser == null || !dresser.IsValid() ) return; 
+
 		dresser.Source = Dresser.ClothingSource.Manual; dresser.Clothing.Clear(); 
+
 		await dresser.Apply(); 
+
 		if ( HideBodyClothing != null ) { 
 			dresser.Clothing.Add( new ClothingContainer.ClothingEntry { Clothing = HideBodyClothing } ); 
 			await dresser.Apply(); 
